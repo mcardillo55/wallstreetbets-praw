@@ -2,7 +2,6 @@
 
 import praw
 import re
-import time
 from collections import Counter
 import curses
 import datetime
@@ -20,19 +19,21 @@ def printTable(stdscr, maxY, c):
 
 def main(stdscr):
     EXCLUDE_LIST = ["I", "A", "YOLO", "IV", "US", "FUCK", "LOL", "RIP"]
+
+    stdscr.nodelay(1)
+    stdscr.addstr(0,0,"Fetching data, please wait...")
     p = re.compile("\\b[^a-zA-Z0-9]?([A-Z]{1,4})[^a-zA-Z0-9]?\\b")
 
     r = praw.Reddit("wallstreetbets comment parser")
-
-    stdscr.addstr(0,0,"Fetching data, please wait...")
     subreddit = r.get_subreddit("wallstreetbets")
 
     maxY, maxX = stdscr.getmaxyx()
     c = Counter()
     commentsVisited = []
-    lastComments = None
 
     while(True):
+        if stdscr.getch() == ord('q'):
+            break
         maxY, maxX = stdscr.getmaxyx()
         stdscr.refresh()
         subredditComments = subreddit.get_comments(limit=1000)
@@ -45,6 +46,6 @@ def main(stdscr):
                             c.update([match])
                     commentsVisited.append(comment.id)
         printTable(stdscr, maxY, c)
-        time.sleep(5)
+        curses.napms(5000)
 
 curses.wrapper(main)
