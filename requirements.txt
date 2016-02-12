@@ -1,6 +1,9 @@
 decorator==4.0.9
 praw==3.3.0
+pytz==2015.7
 requests==2.9.1
+simplejson==3.8.1
 six==1.10.0
 update-checker==0.11
 wsgiref==0.1.2
+yahoo-finance==1.2.1
