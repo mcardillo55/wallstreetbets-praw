@@ -14,13 +14,14 @@ def printTable(stdscr, maxY, c):
     for key, value in sorted(c.iteritems(), key=lambda (k,v): (v,k), reverse=True):
         if (y < maxY - 1):
             share = yahoo_finance.Share(key)
-            if share.get_price() is not None:
-                if share.get_change()[0] is '+':
-                    printColor = curses.color_pair(1)
-                else:
-                    printColor = curses.color_pair(2)
-                stdscr.addstr(y, 0, "%s\t%d\t%s\t%s\t" % (key, value, share.get_price(), share.get_change()), printColor)
-                y = y + 1
+            if share.get_change() is None:
+                continue
+            elif share.get_change()[0] is '+':
+                printColor = curses.color_pair(1)
+            else:
+                printColor = curses.color_pair(2)
+            stdscr.addstr(y, 0, "%s\t%d\t%s\t%s\t" % (key, value, share.get_price(), share.get_change()), printColor)
+            y = y + 1
     stdscr.addstr(maxY-1, 0, "Last updated: " + datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S"))
     stdscr.refresh()
 
