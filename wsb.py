@@ -8,7 +8,7 @@ import datetime
 import yahoo_finance
 
 
-def printTable(stdscr, maxY, c):
+def printTable(stdscr, maxY, numComments, c):
     y = 0
     stdscr.clear()
     for key, value in sorted(c.iteritems(), key=lambda (k,v): (v,k), reverse=True):
@@ -22,7 +22,7 @@ def printTable(stdscr, maxY, c):
                 printColor = curses.color_pair(2)
             stdscr.addstr(y, 0, "%s\t%d\t%s\t%s\t" % (key, value, share.get_price(), share.get_change()), printColor)
             y = y + 1
-    stdscr.addstr(maxY-1, 0, "Last updated: " + datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S"))
+    stdscr.addstr(maxY-1, 0, "Last updated: %s\tComments parsed:%d" % (datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S"), numComments))
     stdscr.refresh()
 
 def main(stdscr):
@@ -55,7 +55,7 @@ def main(stdscr):
                         if match not in EXCLUDE_LIST:
                             c.update([match])
                     commentsVisited.append(comment.id)
-        printTable(stdscr, maxY, c)
+        printTable(stdscr, maxY, len(commentsVisited), c)
         curses.napms(5000)
 
 curses.wrapper(main)
