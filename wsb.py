@@ -16,9 +16,10 @@ def printTable(stdscr, maxY, c):
             share = yahoo_finance.Share(key)
             if share.get_price() is not None:
                 if share.get_change()[0] is '+':
-                    stdscr.addstr(y, 0, key + "\t" + str(value) + "\t" + str(share.get_price()) + "\t" + str(share.get_change() + "\t"), curses.color_pair(1))
+                    printColor = curses.color_pair(1)
                 else:
-                    stdscr.addstr(y, 0, key + "\t" + str(value) + "\t" + str(share.get_price()) + "\t" + str(share.get_change() + "\t"), curses.color_pair(2))
+                    printColor = curses.color_pair(2)
+                stdscr.addstr(y, 0, "%s\t%d\t%s\t%s\t" % (key, value, share.get_price(), share.get_change()), printColor)
                 y = y + 1
     stdscr.addstr(maxY-1, 0, "Last updated: " + datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S"))
     stdscr.refresh()
