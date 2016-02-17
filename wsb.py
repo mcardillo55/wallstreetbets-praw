@@ -7,14 +7,20 @@ import curses
 import datetime
 import yahoo_finance
 
+EXCLUDE_LIST = ["I", "A", "YOLO", "IV", "US", "FUCK", "LOL", "RIP"]
+
 
 def printTable(stdscr, maxY, numComments, c):
+    global EXCLUDE_LIST
     y = 0
     stdscr.clear()
     for key, value in sorted(c.iteritems(), key=lambda (k,v): (v,k), reverse=True):
         if (y < maxY - 1):
             share = yahoo_finance.Share(key)
             if share.get_change() is None:
+            #Not a real symbol, remove and add to exclude list
+                EXCLUDE_LIST.append(key)
+                del c[key]
                 continue
             elif share.get_change()[0] is '+':
                 printColor = curses.color_pair(1)
@@ -26,7 +32,7 @@ def printTable(stdscr, maxY, numComments, c):
     stdscr.refresh()
 
 def main(stdscr):
-    EXCLUDE_LIST = ["I", "A", "YOLO", "IV", "US", "FUCK", "LOL", "RIP"]
+    global EXCLUDE_LIST
 
     stdscr.nodelay(1)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
