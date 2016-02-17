@@ -16,7 +16,10 @@ def printTable(stdscr, maxY, numComments, c):
     stdscr.clear()
     for key, value in sorted(c.iteritems(), key=lambda (k,v): (v,k), reverse=True):
         if (y < maxY - 1):
-            share = yahoo_finance.Share(key)
+            try:
+                share = yahoo_finance.Share(key)
+            except AttributeError:
+                continue
             if share.get_change() is None:
             #Not a real symbol, remove and add to exclude list
                 EXCLUDE_LIST.append(key)
