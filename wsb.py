@@ -49,11 +49,11 @@ def getAndParseComments(subreddit, commentsVisited, p, c):
     for comment in subredditComments:
         m = p.findall(comment.body)
         if m:
-            if comment.id not in commentsVisited:
+            if commentsVisited.get(comment.id) is None:
                 for match in m:
                     if match not in EXCLUDE_LIST:
                         c.update([match])
-                commentsVisited.append(comment.id)
+                commentsVisited[comment.id] = ""
 
 def main(stdscr):
     global EXCLUDE_LIST
@@ -67,7 +67,7 @@ def main(stdscr):
     r = praw.Reddit("wallstreetbets comment parser")
     subreddit = r.get_subreddit("wallstreetbets")
     c = Counter()
-    commentsVisited = []
+    commentsVisited = {}
 
     while(True):
         if stdscr.getch() == ord('q'):
