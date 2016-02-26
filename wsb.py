@@ -25,7 +25,7 @@ def printTable(stdscr, maxY, numComments, shareData, c):
     stdscr.addstr(maxY-1, 0, "Last updated: %s\tComments parsed:%d" % (datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S"), numComments))
     stdscr.refresh()
 
-def getShareData(stdscr, num, c):
+def getShareData(num, c):
     '''
     Takes a counter c of symbols and counts and returns a dict with num amount
     of symbol and Share object pairs. Also does error checking to detect false
@@ -49,6 +49,17 @@ def getShareData(stdscr, num, c):
         y = y + 1
     return shareData
 
+def getAndParseComments(subreddit, commentsVisited, p, c):
+    subredditComments = subreddit.get_comments(limit=1000)
+    for comment in subredditComments:
+        m = p.findall(comment.body)
+        if m:
+            if comment.id not in commentsVisited:
+                for match in m:
+                    if match not in EXCLUDE_LIST:
+                        c.update([match])
+                commentsVisited.append(comment.id)
+
 def main(stdscr):
     global EXCLUDE_LIST
 
@@ -56,11 +67,10 @@ def main(stdscr):
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
     stdscr.addstr(0,0,"Fetching data, please wait...")
+    stdscr.refresh()
     p = re.compile("\\b[^a-zA-Z0-9]?([A-Z]{1,4})[^a-zA-Z0-9]?\\b")
-
     r = praw.Reddit("wallstreetbets comment parser")
     subreddit = r.get_subreddit("wallstreetbets")
-
     c = Counter()
     commentsVisited = []
 
@@ -69,16 +79,9 @@ def main(stdscr):
             break
         maxY, maxX = stdscr.getmaxyx()
         stdscr.refresh()
-        subredditComments = subreddit.get_comments(limit=1000)
-        for comment in subredditComments:
-            m = p.findall(comment.body)
-            if m:
-                if comment.id not in commentsVisited:
-                    for match in m:
-                        if match not in EXCLUDE_LIST:
-                            c.update([match])
-                    commentsVisited.append(comment.id)
-        shareData = getShareData(stdscr, maxY-1, c)
+
+        getAndParseComments(subreddit, commentsVisited, p, c)
+        shareData = getShareData(maxY-1, c)
         printTable(stdscr, maxY, len(commentsVisited), shareData, c)
         curses.napms(5000)
 
