@@ -10,44 +10,39 @@ import yahoo_finance
 EXCLUDE_LIST = ["I", "A", "YOLO", "IV", "US", "FUCK", "LOL", "RIP"]
 
 
-def printTable(stdscr, maxY, numComments, shareData, c):
+def printTable(stdscr, maxY, numComments, shares, c):
     global EXCLUDE_LIST
     y = 0
     stdscr.clear()
     for key, value in sorted(c.iteritems(), key=lambda (k,v): (v,k), reverse=True):
         if (y < maxY - 1):
-            if shareData[key].get_change()[0] is '+':
+            if shares.get_share(key).get_change()[0] is '+':
                 printColor = curses.color_pair(1)
             else:
                 printColor = curses.color_pair(2)
-            stdscr.addstr(y, 0, "%s\t%d\t%s\t%s\t" % (key, value, shareData[key].get_price(), shareData[key].get_change()), printColor)
+            stdscr.addstr(y, 0, "%s\t%d\t%s\t%s\t" % (key, value, shares.get_share(key).get_price(), shares.get_share(key).get_change()), printColor)
             y = y + 1
     stdscr.addstr(maxY-1, 0, "Last updated: %s\tComments parsed:%d" % (datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S"), numComments))
     stdscr.refresh()
 
-def getShareData(num, c):
+def getShareData(c):
     '''
     Takes a counter c of symbols and counts and returns a dict with num amount
     of symbol and Share object pairs. Also does error checking to detect false
     symbols and removes them from c
     '''
-    shareData = {}
-    y = 0 
-    for symbol, count in sorted(c.iteritems(), key=lambda (k,v): (v,k), reverse=True):
-        try:
-            share = yahoo_finance.Share(symbol)
-        except AttributeError:
-            continue
-        if share.get_change() is None:
+    try:
+        shares = yahoo_finance.MultiShare(c.keys())
+    except AttributeError:
+        return shares
+
+    for key, value in shares.get_share().iteritems():
+        if value.get_change() is None:
         #Not a real symbol, remove and add to exclude list
-            EXCLUDE_LIST.append(symbol)
-            del c[symbol]
+            EXCLUDE_LIST.append(key)
+            del c[key]
             continue
-        shareData[symbol] = share
-        if len(shareData) >= num:
-            break;
-        y = y + 1
-    return shareData
+    return shares
 
 def getAndParseComments(subreddit, commentsVisited, p, c):
     subredditComments = subreddit.get_comments(limit=1000)
@@ -81,8 +76,8 @@ def main(stdscr):
         stdscr.refresh()
 
         getAndParseComments(subreddit, commentsVisited, p, c)
-        shareData = getShareData(maxY-1, c)
-        printTable(stdscr, maxY, len(commentsVisited), shareData, c)
+        shares = getShareData(c)
+        printTable(stdscr, maxY, len(commentsVisited), shares, c)
         curses.napms(5000)
 
 curses.wrapper(main)
