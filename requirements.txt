@@ -1,5 +1,5 @@
 decorator==4.0.9
-praw==3.3.0
+praw==3.4.0
 pytz==2015.7
 requests==2.9.1
 simplejson==3.8.1
